@@ -1,7 +1,4 @@
 *~
 safe
-package.json
-babel.config.js
-.eslintrc.js
 *main.js
 node_modules/
