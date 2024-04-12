@@ -48,6 +48,6 @@ export default class Pricing {
   // static method that calculates converted price
   static convertPrice(amount, conversionRate) {
     const price = amount * conversionRate;
-    return price
+    return price;
   }
 }
