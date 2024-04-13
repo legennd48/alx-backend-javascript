@@ -37,7 +37,6 @@ ${this._holbertonClass.year} - ${this._holbertonClass.location}`;
   }
 }
 
-
 const student1 = new StudentHolberton('Guillaume', 'Salva', class2020);
 const student2 = new StudentHolberton('John', 'Doe', class2020);
 const student3 = new StudentHolberton('Albert', 'Clinton', class2019);
