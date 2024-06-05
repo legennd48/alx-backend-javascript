@@ -4,6 +4,7 @@ const fs = require('fs');
  * Counts and logs the number of students in a CSV file.
  * @param {string} filePath - The path to the CSV file.
  * @throws Will throw an error if the database cannot be loaded.
+ * @author Abdulrazzaq Liasu
  */
 
 function countStudents(filePath) {
