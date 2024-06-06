@@ -12,7 +12,7 @@ function calculateNumber(type, a, b) {
   if (type === 'DIVIDE') {
     return roundedB === 0 ? 'Error' : roundedA / roundedB;
   }
-  return 0
+  return 0;
 }
 
 module.exports = calculateNumber;
