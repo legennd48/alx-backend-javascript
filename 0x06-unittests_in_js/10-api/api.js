@@ -1,6 +1,10 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 
 const app = express();
+
+// Middleware to parse JSON bodies
+app.use(bodyParser.json());
 
 // Listen on port 7865
 app.listen(7865, () => {
@@ -14,7 +18,6 @@ app.get('/', (_, res) => {
 
 app.get('/cart/:id(\\d+)', (req, res) => {
   const id = req.params.id;
-
   res.send(`Payment methods for cart ${id}`);
 });
 
@@ -23,12 +26,7 @@ app.get('/available_payments', (_req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  let username = '';
-
-  if (req.body) {
-    username = req.body.userName;
-  }
-
+  const username = req.body.userName || '';
   res.send(`Welcome ${username}`);
 });
 
