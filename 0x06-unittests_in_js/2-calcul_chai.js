@@ -1,0 +1,18 @@
+function calculateNumber(type, a, b) {
+  // Round both numbers using Math.round()
+  const roundedA = Math.round(a);
+  const roundedB = Math.round(b);
+
+  if (type === 'SUM') {
+    return roundedA + roundedB;
+  }
+  if (type === 'SUBTRACT') {
+    return roundedA - roundedB;
+  }
+  if (type === 'DIVIDE') {
+    return roundedB === 0 ? 'Error' : roundedA / roundedB;
+  }
+  return 0;
+}
+
+module.exports = calculateNumber;
