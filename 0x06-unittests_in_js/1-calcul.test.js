@@ -101,10 +101,13 @@ describe('calculateNumber function -DIVIDE-', () => {
 
   // Test case for dividing by 0
   it('should throw an error when dividing by 0', () => {
-    try {
-      calculateNumber('DIVIDE', 1.3, 0);
-    } catch (error) {
-      assert.strictEqual(error.message, 'Error');
-    }
+      const result = calculateNumber('DIVIDE', 1.3, 0);
+      assert.strictEqual(result, 'Error')
+  });
+
+  //Test for wrong operation
+  it('should return 0 if wrong operation is given', () => {
+    const result = calculateNumber('Mod', 2, 3);
+    assert.strictEqual(result, 0);
   });
 });
