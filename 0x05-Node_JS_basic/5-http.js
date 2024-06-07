@@ -1,53 +1,113 @@
 const http = require('http');
 const fs = require('fs');
-const path = require('path');
-const countStudents = require('./3-read_file_async');
 
-// Create an HTTP server
-const app = http.createServer((req, res) => {
-  // Set the response header
-  res.setHeader('Content-Type', 'text/plain');
+const app = http.createServer();
+const DB_FILE = process.argv.length > 2 ? process.argv[2] : '';
+const HOST = 'localhost';
+const PORT = 1245;
 
-  // Parse the URL
-  const url = new URL(req.url, `http://${req.headers.host}`);
+/**
+ * Counts the students in a CSV data file.
+ * @param {String} dataPath The path to the CSV data file.
+ * @author Abdulrazzaq Liasu
+ */
+const countStudents = (dataPath) => new Promise((resolve, reject) => {
+  if (!dataPath) {
+    reject(new Error('Cannot load the database'));
+    return;
+  }
 
-  // Handle different URL paths
-  switch (url.pathname) {
-    case '/':
-      // Send 'Hello Holberton School!' for the root path
-      res.end('Hello Holberton School!\n');
-      break;
-    case '/students':
-      // Get the path to the database file
-      const databasePath = path.join(__dirname, 'database.csv');
+  fs.readFile(dataPath, 'utf-8', (err, data) => {
+    if (err) {
+      reject(new Error('Cannot load the database'));
+      return;
+    }
 
-      // Read the database file asynchronously
-      countStudents(databasePath)
-        .then((results) => {
-          // Send the result as plain text
-          res.end(`${results.message}\n`);
-          for (const [field, details] of Object.entries(results.fields)) {
-            res.write(`Number of students in ${field}: ${details.count}. List: ${details.list}\n`);
-          }
-          res.end();
+    const reportParts = [];
+    const fileLines = data.trim().split('\n');
+    const studentGroups = {};
+    const dbFieldNames = fileLines[0].split(',');
+    const studentPropNames = dbFieldNames.slice(0, -1);
+
+    for (const line of fileLines.slice(1)) {
+      const studentRecord = line.split(',');
+      const field = studentRecord[studentRecord.length - 1];
+      if (!studentGroups[field]) {
+        studentGroups[field] = [];
+      }
+      const studentEntries = studentPropNames.map((propName, idx) => [
+        propName,
+        studentRecord[idx],
+      ]);
+      studentGroups[field].push(Object.fromEntries(studentEntries));
+    }
+
+    const totalStudents = Object.values(studentGroups).reduce(
+      (pre, cur) => pre + cur.length,
+      0,
+    );
+    reportParts.push(`Number of students: ${totalStudents}`);
+    for (const [field, group] of Object.entries(studentGroups)) {
+      reportParts.push([
+        `Number of students in ${field}: ${group.length}.`,
+        'List:',
+        group.map((student) => student.firstname).join(', '),
+      ].join(' '));
+    }
+    resolve(reportParts.join('\n'));
+  });
+});
+
+const SERVER_ROUTE_HANDLERS = [
+  {
+    route: '/',
+    handler(_, res) {
+      const responseText = 'Hello Holberton School!';
+
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Length', Buffer.byteLength(responseText));
+      res.statusCode = 200;
+      res.end(responseText);
+    },
+  },
+  {
+    route: '/students',
+    handler(_, res) {
+      const responseParts = ['This is the list of our students'];
+
+      countStudents(DB_FILE)
+        .then((report) => {
+          responseParts.push(report);
+          const responseText = responseParts.join('\n');
+          res.setHeader('Content-Type', 'text/plain');
+          res.setHeader('Content-Length', Buffer.byteLength(responseText));
+          res.statusCode = 200;
+          res.end(responseText);
         })
-        .catch((error) => {
+        .catch((err) => {
+          responseParts.push(err.message);
+          const responseText = responseParts.join('\n');
+          res.setHeader('Content-Type', 'text/plain');
+          res.setHeader('Content-Length', Buffer.byteLength(responseText));
           res.statusCode = 500;
-          res.end(`${error.message}\n`);
+          res.end(responseText);
         });
-      break;
-    default:
-      // Handle unknown paths with 404 Not Found
-      res.statusCode = 404;
-      res.end('404 Not Found\n');
+    },
+  },
+];
+
+app.on('request', (req, res) => {
+  const routeHandler = SERVER_ROUTE_HANDLERS.find((handler) => handler.route === req.url);
+  if (routeHandler) {
+    routeHandler.handler(req, res);
+  } else {
+    res.statusCode = 404;
+    res.end('404 Not Found');
   }
 });
 
-// Listen on port 1245
-const PORT = 1245;
-app.listen(PORT, () => {
-  console.log(`Server is running and listening on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server listening at -> http://${HOST}:${PORT}`);
 });
 
-// Export the app
 module.exports = app;
